@@ -13,8 +13,8 @@ const pointsParGroupe = {
   "Artistes": 65
 };
 
-const baseUrl = "https://wyb-test.forumactif.com"; // 🔥 Remplace par l'URL de ton forum si besoin
-const maxUsers = 150; // Combien de profils tu veux scanner (u1 à u150)
+const baseUrl = "https://wyb-test.forumactif.com"; // 🔥 adapte ton URL
+const maxUsers = 150; // Combien de profils tu veux scanner
 
 const pointsGroupe = {};
 const wybsGroupe = {};
@@ -38,9 +38,12 @@ async function scannerProfils() {
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, "text/html");
 
-      // Récupérer le pseudo
+      // ➡️ Récupérer correctement le pseudo
       const nameBox = doc.querySelector(".boxPFIL .namePFIL strong");
-      if (!nameBox) continue;
+      if (!nameBox) {
+        console.log(`❌ Aucun pseudo trouvé pour u${i}`);
+        continue;
+      }
 
       const pseudo = nameBox.textContent.trim().toLowerCase();
       let groupeTrouvé = null;
@@ -51,14 +54,23 @@ async function scannerProfils() {
         }
       }
 
-      if (!groupeTrouvé) continue;
+      if (!groupeTrouvé) {
+        console.log(`❌ Aucun groupe pour ${pseudo}`);
+        continue;
+      }
 
-      // Récupérer les WYB's
+      // ➡️ Récupérer correctement les WYB’s
       const wybDiv = doc.querySelector(".abtPFIL #field_id-13 .field_uneditable");
-      if (!wybDiv) continue;
+      if (!wybDiv) {
+        console.log(`❌ Aucun WYB trouvé pour ${pseudo}`);
+        continue;
+      }
 
       const wybs = parseInt(wybDiv.textContent.trim());
-      if (isNaN(wybs)) continue;
+      if (isNaN(wybs)) {
+        console.log(`❌ WYB pas un nombre pour ${pseudo}`);
+        continue;
+      }
 
       wybsGroupe[groupeTrouvé] += wybs;
 
