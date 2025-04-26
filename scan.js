@@ -3,8 +3,8 @@ console.log("🚀 Script de scan lancé");
 // === Configuration ===
 const groupes = {
   "Guerriers": ["admin"],
-  "Alchimistes": ["sacha winkler"],
-  "Artistes": ["thalia hamilton"]
+  "Alchimistes": ["Sebastian McClaren"],
+  "Artistes": []
 };
 
 const pointsParGroupe = {
