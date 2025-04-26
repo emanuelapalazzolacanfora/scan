@@ -49,7 +49,7 @@ async function scannerProfils() {
         continue;
       }
 
-      const wybDiv = doc.querySelector("#field_id-13 .field_uneditable");
+      const wybDiv = doc.querySelector("#field_id-13 div .field_uneditable");
       if (!wybDiv) {
         console.log(`❌ Pas de WYB's pour ${pseudo}`);
         continue;
