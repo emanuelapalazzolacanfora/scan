@@ -7,25 +7,16 @@ const groupes = {
   "Artistes": []
 };
 
-const pointsParGroupe = {
-  "Guerriers": 87,
-  "Alchimistes": 112,
-  "Artistes": 65
-};
+const baseUrl = "https://wyb-test.forumactif.com"; // ➔ Ton forum
+const maxUsers = 150; // ➔ Jusqu'à quel uN scanner
 
-const baseUrl = "https://wyb-test.forumactif.com"; // 🔥 adapte ton URL
-const maxUsers = 150; // Combien de profils tu veux scanner
+const wybsGroupe = {}; // Cumuler uniquement les WYB's
 
-const pointsGroupe = {};
-const wybsGroupe = {};
-
-// === Fonctions ===
 async function scannerProfils() {
   console.log("🔍 Début du scan...");
 
-  // Réinitialiser les points
+  // Réinitialiser
   Object.keys(groupes).forEach(groupe => {
-    pointsGroupe[groupe] = pointsParGroupe[groupe];
     wybsGroupe[groupe] = 0;
   });
 
@@ -38,10 +29,9 @@ async function scannerProfils() {
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, "text/html");
 
-      // ➡️ Récupérer correctement le pseudo
       const nameBox = doc.querySelector(".boxPFIL .namePFIL strong");
       if (!nameBox) {
-        console.log(`❌ Aucun pseudo trouvé pour u${i}`);
+        console.log(`❌ Pas de pseudo pour u${i}`);
         continue;
       }
 
@@ -55,29 +45,28 @@ async function scannerProfils() {
       }
 
       if (!groupeTrouvé) {
-        console.log(`❌ Aucun groupe pour ${pseudo}`);
+        console.log(`❌ ${pseudo} n'appartient à aucun groupe`);
         continue;
       }
 
-      // ➡️ Récupérer correctement les WYB’s
-      const wybDiv = doc.querySelector(".abtPFIL #field_id-13 .field_uneditable");
+      const wybDiv = doc.querySelector("#field_id-13 .field_uneditable");
       if (!wybDiv) {
-        console.log(`❌ Aucun WYB trouvé pour ${pseudo}`);
+        console.log(`❌ Pas de WYB's pour ${pseudo}`);
         continue;
       }
 
-      const wybs = parseInt(wybDiv.textContent.trim());
-      if (isNaN(wybs)) {
-        console.log(`❌ WYB pas un nombre pour ${pseudo}`);
+      const match = wybDiv.textContent.replace(/\s/g, '').match(/\d+/);
+      if (!match) {
+        console.log(`❌ WYB's pas trouvé pour ${pseudo}`);
         continue;
       }
 
+      const wybs = parseInt(match[0], 10);
       wybsGroupe[groupeTrouvé] += wybs;
 
       console.log(`✅ ${pseudo} (${groupeTrouvé}) : +${wybs} WYB's`);
-    } catch (e) {
-      console.error(`❌ Erreur sur u${i}`, e);
-      continue;
+    } catch (error) {
+      console.error(`❌ Erreur sur u${i}`, error);
     }
   }
 
@@ -90,10 +79,9 @@ function afficherResume() {
 
   let texteCopie = "";
 
-  Object.keys(groupes).forEach(groupe => {
-    const total = pointsGroupe[groupe] + wybsGroupe[groupe];
-    container.innerHTML += `<div>${groupe} : ${total} points (Fixes ${pointsParGroupe[groupe]} + WYB's ${wybsGroupe[groupe]})</div>`;
-    texteCopie += `${groupe} : ${total} points\n`;
+  Object.keys(wybsGroupe).forEach(groupe => {
+    container.innerHTML += `<div><strong>${groupe}</strong> : ${wybsGroupe[groupe]} WYB's</div>`;
+    texteCopie += `${groupe} : ${wybsGroupe[groupe]} WYB's\n`;
   });
 
   document.getElementById('copy-points').style.display = "inline-block";
@@ -104,7 +92,6 @@ function afficherResume() {
   };
 }
 
-// === Lancer le scan ===
 document.getElementById('start-scan').addEventListener('click', () => {
   scannerProfils();
 });
