@@ -2,19 +2,16 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Scanner de Points WYB's</title>
+  <title>Scan des WYB's par Groupe</title>
 </head>
 <body>
+  <h1>Scanner uniquement les WYB's</h1>
 
-<h1>Scanner de Points WYB's</h1>
+  <button id="start-scan">Démarrer le Scan</button>
+  <button id="copy-points" style="display:none;">Copier Résumé</button>
 
-<button id="start-scan">Lancer le Scan</button>
+  <div id="resume-points" style="margin-top: 20px;"></div>
 
-<div id="resume-points" style="margin-top: 20px;"></div>
-
-<button id="copy-points" style="display: none;">Copier Résumé</button>
-
-<script src="scan.js"></script>
-
+  <script src="scan.js"></script>
 </body>
 </html>
