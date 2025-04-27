@@ -1,97 +1,66 @@
-console.log("🚀 Script de scan lancé");
+console.log("???? Script WYB's lancé !");
 
-// === Configuration ===
+// --- Données à modifier si besoin ---
 const groupes = {
   "Guerriers": ["admin"],
   "Alchimistes": ["Sebastian McClaren"],
   "Artistes": []
 };
 
-const baseUrl = "https://wyb-test.forumactif.com"; // ➔ Ton forum
-const maxUsers = 150; // ➔ Jusqu'à quel uN scanner
+  
+// --- Variables de cumul ---
+const wybParGroupe = {
+  "Guerriers": 0,
+  "Alchimistes": 0,
+  "Artistes": 0
+};
 
-const wybsGroupe = {}; // Cumuler uniquement les WYB's
+// --- Scan des membres ---
+const membres = document.querySelectorAll('#LMBER');
 
-async function scannerProfils() {
-  console.log("🔍 Début du scan...");
+membres.forEach(membre => {
+  const pseudoEl = membre.querySelector('#nameLMBER a');
+  const pointsEl = membre.querySelector('.boxLMBER span:nth-child(5) + span');
 
-  // Réinitialiser
-  Object.keys(groupes).forEach(groupe => {
-    wybsGroupe[groupe] = 0;
-  });
+  if (!pseudoEl || !pointsEl) return;
 
-  for (let i = 1; i <= maxUsers; i++) {
-    try {
-      const response = await fetch(`${baseUrl}/u${i}`);
-      if (!response.ok) continue;
-
-      const text = await response.text();
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(text, "text/html");
-
-      const nameBox = doc.querySelector(".boxPFIL .namePFIL strong");
-      if (!nameBox) {
-        console.log(`❌ Pas de pseudo pour u${i}`);
-        continue;
-      }
-
-      const pseudo = nameBox.textContent.trim().toLowerCase();
-      let groupeTrouvé = null;
-      for (const [groupe, membres] of Object.entries(groupes)) {
-        if (membres.map(m => m.toLowerCase()).includes(pseudo)) {
-          groupeTrouvé = groupe;
-          break;
-        }
-      }
-
-      if (!groupeTrouvé) {
-        console.log(`❌ ${pseudo} n'appartient à aucun groupe`);
-        continue;
-      }
-
-      const wybDiv = doc.querySelector("#field_id-13 div .field_uneditable");
-      if (!wybDiv) {
-        console.log(`❌ Pas de WYB's pour ${pseudo}`);
-        continue;
-      }
-
-      const match = wybDiv.textContent.replace(/\s/g, '').match(/\d+/);
-      if (!match) {
-        console.log(`❌ WYB's pas trouvé pour ${pseudo}`);
-        continue;
-      }
-
-      const wybs = parseInt(match[0], 10);
-      wybsGroupe[groupeTrouvé] += wybs;
-
-      console.log(`✅ ${pseudo} (${groupeTrouvé}) : +${wybs} WYB's`);
-    } catch (error) {
-      console.error(`❌ Erreur sur u${i}`, error);
+  const pseudo = pseudoEl.textContent.trim().toLowerCase();
+  const wybTexte = pointsEl.textContent.trim();
+  
+  // Cherche si ce pseudo appartient à un groupe
+  let groupeTrouvé = null;
+  for (const [groupe, membres] of Object.entries(groupes)) {
+    if (membres.map(m => m.toLowerCase()).includes(pseudo)) {
+      groupeTrouvé = groupe;
+      break;
     }
   }
 
-  afficherResume();
-}
+  if (!groupeTrouvé) return;
 
-function afficherResume() {
-  const container = document.getElementById('resume-points');
-  container.innerHTML = "";
+  // Extraire nombre de WYB's
+  const wybMatch = wybTexte.match(/\d+/);
+  const wybNombre = wybMatch ? parseInt(wybMatch[0], 10) : 0;
 
-  let texteCopie = "";
-
-  Object.keys(wybsGroupe).forEach(groupe => {
-    container.innerHTML += `<div><strong>${groupe}</strong> : ${wybsGroupe[groupe]} WYB's</div>`;
-    texteCopie += `${groupe} : ${wybsGroupe[groupe]} WYB's\n`;
-  });
-
-  document.getElementById('copy-points').style.display = "inline-block";
-  document.getElementById('copy-points').onclick = () => {
-    navigator.clipboard.writeText(texteCopie.trim()).then(() => {
-      alert("Résumé copié !");
-    });
-  };
-}
-
-document.getElementById('start-scan').addEventListener('click', () => {
-  scannerProfils();
+  wybParGroupe[groupeTrouvé] += wybNombre;
 });
+
+// --- Affichage du résumé ---
+const recapBloc = document.createElement('div');
+recapBloc.classList.add('pointsl', 'masquerscan');
+recapBloc.innerHTML = `
+  <h3>Récapitulatif WYB's par groupe :</h3>
+  <ul>
+    <li>Guerriers : WYB's ${wybParGroupe["Guerriers"]}</li>
+    <li>Alchimistes : WYB's ${wybParGroupe["Alchimistes"]}</li>
+    <li>Artistes : WYB's ${wybParGroupe["Artistes"]}</li>
+  </ul>
+`;
+
+const target = document.querySelector('.btmLMBER');
+if (target) {
+  target.insertAdjacentElement('afterend', recapBloc);
+  console.log("✅ Résumé ajouté !");
+} else {
+  console.warn("❌ .btmLMBER introuvable pour insérer le résumé !");
+}
